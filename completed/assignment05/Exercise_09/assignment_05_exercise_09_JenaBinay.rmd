@@ -3,9 +3,9 @@ title: "Week 05 - Exercise 9"
 author: "Binay Jena"
 date: October 3rd, 2020
 output:
+  pdf_document: default
   html_document: default
   word_document: default
-  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -34,9 +34,9 @@ students_df <- read.csv("student-survey.csv")
 cov(students_df)
 ```
 
-Covariance is the simplest way to look or compare the two variables. It helps in understanding whether the two variables in question "Co-vary" with each other.
-Its a good way to assess, if the two variables are related to each other.
-A +ve covariance means that if one of the variables deviates in some direction from the mean then the other variable also deviates in the same direction. While if they deviate in opposite direction from the mean then the value is -ve.
+Covariance is the simplest way to look or compare the two variables. It helps in understanding whether the two variables in question simultaneously i.e. co-vary with each other.
+This metric is widely accepted as an indicator of related-ness amongst two variables.
+A positive covariance indicates directional bias or movement in one of variables from the mean would also mean same directional deviation with the other variable w.r.t the eman. If this deviation is in opposite  direction from the mean then the covariance is negative.
 
 Based on the table above, we can say
 
@@ -52,9 +52,9 @@ Based on the table above, we can say
 
 It seems, we are having following measurements for each of the survey variables
 
-1. TimeReading: This seems to be in hours
-2. TimeTV: This seems to be in minutes
-3. Happiness: This seems either percentage or some cumulative score
+1. TimeReading: in hours
+2. TimeTV: in minutes
+3. Happiness: some numeric score could be percentages too
 4. Gender: Two values 0 and 1. Each number might represent either Male or Female
 
 Covariance is a measure of relationship. So if we change the measurement the covariance will change. Covariance is a non standardized measurement.
@@ -131,30 +131,18 @@ cor(students_df)
 cor(students_df)^2
 ```
 
-Based on Correlation Coefficient, I already explained the relation between different variables. Putting the same details again in this section
+Although we cannot make direct conclusions about causality from a correlation, we
+can take the correlation coefficient a step further by squaring it. The correlation
+coefficient squared (known as the coefficient of determination, $R^{2}$) is a measure
+of the amount of variability in one variable that is shared by the other.
+In our student survey example the correlation coefficient tells us that the watching TV is negatively related to reading. However we don't know how much percent of affected reading time is because of watching TV. This is where **Coefficient of Determination** comes handy. It shows us what percent of reading is affected by watching TV. So above $R^{2}$ matrix shows that the 77% of the time the reading is affected by watching TV.
 
-1. TimeReading and TimeTV have a large -ve correlation.
-2. TimeReading and Happiness have a medium -ve correlation
-3. TimeReading and Gender have negligible -ve correlation
-4. TimeTV and Happiness have large +ve correlation
-5. TimeTV and Gender have negligible + correlation
-6. Gender and Happiness have negligible +ve correlation
-
-However with Coefficient of Determination or the $R^2$
-
-We can say that
-
-1. TimeReading and TimeTV have approximately covariability of 77.98%
-2. TimeReading and Happiness have approximately covariability of 18.91%
-3. TimeReading and Gender have negligible covariability
-4. TimeTV and Happiness have covariability of 40.52%
-5. TimeTV and Gender have negligible covariability
-6. Happiness and Gender have covariability of 2.46%
 
 
 ## f. Based on your analysis can you say that watching more TV caused students to read less? Explain.
 
-Yes, Watching TV causes Students to read less. The same reflects with the large -ve correlation(-0.883) coefficient between the two and also has co variability of 77.98%. Further, we may also understand from this that we have a fixed time during the day i.e. 24hrs, which a person might be using for reading or watching tv as a leisure activity. So if one spends more time on one activity the other activity will surely be having less time spent, unless one takes out time from other activities such as job, sleep not mentioned in the dataframe.
+Yes, Watching TV causes Students to read less. Based on correlation test of student survey attributes we can say reading is affected by watching TV. Also as we have seen coefficient of determination also shows as much as 77% of the time reading time is affected by watching TV.
+
 
 ## g. Pick three variables and perform a partial correlation, documenting which variable you are “controlling”. Explain how this changes your interpretation and explanation of the results.
 
@@ -167,8 +155,4 @@ pcor(c("TimeReading","TimeTV", "Gender"), var(students_df))
 # coefficient of determination - R^2
 pcor(c("TimeReading","TimeTV", "Gender"), var(students_df))^2
 ```
-So here we see partial correlation coefficient is -0.886, a very minimal difference from the overall data without controlling the gender. So seems this third variable gender has negligible effect on the correlation of these two variables.
-
-Further the coefficient of determination has also changed from 77.98% to 78.5%, which also seems minimal.
-
-Hence we can conclude that the gender variable has least effect on the co-variability of the variables TimeReading and TimeTV
+Partial correlation analysis using TimeTv, TimeReading and Happiness shows that the time watching TV is negatively affecting reading time. Also when we keep Happiness constant doesn't affect much the relation between watching TV and reading time. With correlation test we had r = -0.88 where as with partial test we get partial correlation of -0.87.
