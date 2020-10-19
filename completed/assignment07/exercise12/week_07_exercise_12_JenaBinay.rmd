@@ -1,0 +1,142 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+title: "WEEK 7 - EXERCISE 12"
+author: "Jena, Binay"
+date: '2020-10-18'
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+bibliography: bibliography.bib
+---
+
+
+**a. Explain why you chose to remove data points from your ‘clean’ dataset.**
+**Answer** maybe its due to bad data or specific sale record being erroneous
+
+
+```{r include=FALSE}
+library(ggplot2)
+library(readxl)
+options(warn=-1)
+library(tidyr)
+library(readr)
+setwd("C:/Users/binay/Documents/GitHub/dsc520/")
+housing_df <- read_xlsx("completed/assignment07/exercise12/week-6-housing.xlsx")
+housing_data <- housing_df[(is.na(housing_df$sale_warning)),]
+str(housing_data)
+head(housing_data)
+```
+```{r}
+summary(housing_data)
+```
+
+
+**b. Create two variables; one that will contain the variables Sale Price and Square Foot of Lot (same variables used from previous assignment on simple regression) and one that will contain Sale Price and several additional predictors of your choice. Explain the basis for your additional predictor selections.**
+
+#sales_price_with_sq_ft_lot <- housing_data[,c("Sale Price","sq_ft_lot")]
+```{r}
+cor(housing_data$'Sale Price', housing_data$square_feet_total_living)^2 * 100
+cor.test(housing_data$'Sale Price', housing_data$square_feet_total_living)
+cor(housing_data$'Sale Price', housing_data$building_grade)^2 * 100
+cor.test(housing_data$'Sale Price', housing_data$building_grade)
+cor(housing_data$'Sale Price', housing_data$year_built)^2 * 100
+cor.test(housing_data$'Sale Price', housing_data$year_built)
+cor(housing_data$'Sale Price', housing_data$bedrooms)^2 * 100
+cor.test(housing_data$'Sale Price', housing_data$bedrooms)
+```
+
+**Answer:**
+I see all variables shown above are positively correlated. building grade and square feet of living room share 20% and 15% variation in determining sales price. so i chose building grade and square feet of living as predictors for the model over year_built and bedrooms.
+
+
+```{r}
+sales_price_with_sq_ft_lot <-  lm(housing_data$'Sale Price' ~ housing_data$sq_ft_lot, data = housing_data)
+sales_price_with_others <- lm(housing_data$'Sale Price' ~ housing_data$sq_ft_lot + housing_data$square_feet_total_living + housing_data$building_grade, data = housing_data)
+```
+
+**c. Execute a summary() function on two variables defined in the previous step to compare the model results. What are the R2 and Adjusted R2 statistics? Explain what these results tell you about the overall model. Did the inclusion of the additional predictors help explain any large variations found in Sale Price?**
+
+```{r}
+summary(sales_price_with_sq_ft_lot)
+summary(sales_price_with_others)
+```
+
+**Answer:**
+
+R-Squared indicates how good the model is predicted. Higher the R2 value, means better the correlation coefficient. First model with value 0.05799, implies square foot of the lot contributes to 5.8% to the sales price In the other model , other attributes contribute 54% towards sale price.
+
+Adjusted R2 indicates how well the model generalizes, and we don't expect much deviation off R2. So cross validity of models is reasonable in our case.
+
+
+**d. Considering the parameters of the multiple regression model you have created. What are the standardized betas for each parameter and what do the values indicate?**
+
+```{r}
+library("QuantPsyc")
+lm.beta(sales_price_with_others)
+```
+
+**Answer:**
+
+The standardized beta estimates tell us the number of standard deviations by which the outcome will change as a result of one standard deviation change in the predictor.
+
+In this case, 1 standard deviation of change in Sq_ft_lot causes sales price to change by 0.019 standard deviation.
+1 standard deviation change in square_feet_total_living causes sales price to change by 0.361 standard deviation and
+1 standard deviation change in building_grade can cause 0.120 standard deviation change in sale price.
+
+**e. Calculate the confidence intervals for the parameters in your model and explain what the results indicate.**
+```{r}
+confint(sales_price_with_others, level = 0.95)
+```
+
+**Answer:**
+
+The confidence interval shows that there is positive relation between all predictors and outcome. Also the 95% confidence interval range is not very big which means this sample if close to the beta of population.
+
+**f. Assess the improvement of the new model compared to your original model (simple regression model) by testing whether this change is significant by performing an analysis of variance.**
+
+```{r}
+anova(sales_price_with_sq_ft_lot, sales_price_with_others)
+```
+
+
+**Answer:** The value in column  Pr(>F) is 2.2e−16 (i.e.~10^-22);
+sales_price_with_others significantly improved the fit of the model to the data compared to
+sales_price_with_sq_ft_lot.
+
+**g. Perform casewise diagnostics to identify outliers and/or influential cases, storing each function's output in a dataframe assigned to a unique variable name.**
+
+
+```{r}
+housing_data$standardized_residuals<- rstandard(sales_price_with_others)
+head(housing_data$standardized_residuals)
+housing_data$studentized_residuals<-rstudent(sales_price_with_others)
+head(housing_data$studentized_residuals)
+housing_data$cooks_distance<-cooks.distance(sales_price_with_others)
+head(housing_data$cooks_distance)
+housing_data$dfbeta<-dfbeta(sales_price_with_others)
+head(housing_data$dfbeta)
+housing_data$dffit<-dffits(sales_price_with_others)
+head(housing_data$dffit)
+housing_data$leverage<-hatvalues(sales_price_with_others)
+head(housing_data$leverage)
+housing_data$covariance_ratios<-covratio(sales_price_with_others)
+head(housing_data$covariance_ratios)
+```
+
+
+**h. Calculate the standardized residuals using the appropriate command, specifying those that are +-2, storing the results of large residuals in a variable you create.**
+
+```{r}
+housing_data$large_residual <- housing_data$studentized_residuals > 2 | housing_data$studentized_residuals < -2
+```
+
+**i. Use the appropriate function to show the sum of large residuals.**
+
+```{r}
+sum(housing_data$large_residual)
+```
